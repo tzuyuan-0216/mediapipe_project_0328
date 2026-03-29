@@ -57,6 +57,9 @@ const targetPos = ref({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
 let wasPinching = false;
 let cameraInstance = null;
 const lerpFactor = 0.15;
+let isActive = true;
+let isProcessing = false; // 新增：防止 WASM 衝突
+
 
 // --- 計算屬性 ---
 const cursorPositionStyle = computed(() => ({
@@ -82,6 +85,8 @@ const onResults = (results) => {
 };
 
 const animationLoop = () => {
+  if (!isActive) return; // 新增：如果組件已卸載，停止執行邏輯
+  
   // 1. 平滑移動
   currentPos.value.x += (targetPos.value.x - currentPos.value.x) * lerpFactor;
   currentPos.value.y += (targetPos.value.y - currentPos.value.y) * lerpFactor;
@@ -108,8 +113,10 @@ const animationLoop = () => {
   if (isPinching.value && !wasPinching) {
     if (lastHoveredId.value) {
       const targetUrl = games.find(g => g.id === lastHoveredId.value)?.url;
+      isActive = false;
       if (targetUrl) {
         // 使用 Vue Router 進行導航
+        if (cameraInstance) cameraInstance.stop();
         setTimeout(() => router.push(targetUrl), 200);
       }
     }
@@ -127,7 +134,7 @@ onMounted(() => {
 
   hands.setOptions({
     maxNumHands: 1,
-    modelComplexity: 1,
+    modelComplexity: 0,
     minDetectionConfidence: 0.7,
     minTrackingConfidence: 0.7
   });
@@ -136,7 +143,19 @@ onMounted(() => {
 
   if (videoRef.value) {
     cameraInstance = new Camera(videoRef.value, {
-      onFrame: async () => await hands.send({ image: videoRef.value }),
+      onFrame: async () => {
+        // 核心修正：加入 isActive 與 isProcessing 判斷
+        if (isActive && !isProcessing && videoRef.value?.readyState >= 2) {
+          isProcessing = true;
+          try {
+            await hands.send({ image: videoRef.value });
+          } catch (e) {
+            console.error("Home MediaPipe Error:", e);
+          } finally {
+            isProcessing = false;
+          }
+        }
+      },
       width: 640,
       height: 480
     });
@@ -147,9 +166,8 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  if (cameraInstance) {
-    cameraInstance.stop(); // 重要：離開頁面時停止攝影機，釋放 WASM 資源
-  }
+  isActive = false; // 確保組件卸載時切斷所有異步循環
+  if (cameraInstance) cameraInstance.stop();
 });
 </script>
 
