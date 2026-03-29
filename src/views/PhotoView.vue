@@ -277,17 +277,32 @@ onUnmounted(() => {
 }
 
 .gallery {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  overflow-y: auto;
-  max-height: 60vh;
+  display: flex;          /* 改用 flex 佈局 */
+  flex-direction: column; /* 讓內容垂直排列 */
+  gap: 15px;             /* 照片之間的間距 */
+  overflow-y: auto;      /* 允許垂直捲動 */
+  max-height: 65vh;      /* 調整最大高度，避免撐破側邊欄 */
+  padding-right: 10px;   /* 為捲軸預留空間 */
+}
+
+.gallery::-webkit-scrollbar {
+  width: 6px;
+}
+.gallery::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 10px;
 }
 
 .gallery img {
-  width: 100%;
-  border-radius: 6px;
-  border: 1px solid #444;
+  width: 100%;           /* 寬度撐滿側邊欄容器 */
+  border-radius: 12px;   /* 增加圓角更現代感 */
+  border: 2px solid #333;
+  transition: transform 0.3s ease;
+}
+
+.gallery img:hover {
+  transform: scale(1.02); /* 游標滑過微幅放大 */
+  border-color: var(--ps-blue);
 }
 
 .main-display {
