@@ -109,13 +109,37 @@ const loop = () => {
   cY.value += (tY - cY.value) * 0.15;
   
   // 繪製影像至畫布
-  if (videoRef.value && canvasRef.value) {
-    const ctx = canvasRef.value.getContext('2d');
-    if (canvasRef.value.width !== videoRef.value.videoWidth) {
-      canvasRef.value.width = videoRef.value.videoWidth;
-      canvasRef.value.height = videoRef.value.videoHeight;
+  if (canvasRef.value && videoRef.value) {
+    const canvas = canvasRef.value;
+    const video = videoRef.value;
+    
+    if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     }
-    ctx.drawImage(videoRef.value, 0, 0);
+
+    const ctx = canvas.getContext('2d');
+    
+    // 使用 drawImage 的切片功能，模擬 object-fit: cover 的效果
+    const vWidth = video.videoWidth;
+    const vHeight = video.videoHeight;
+    const vAspect = vWidth / vHeight;
+    const cAspect = canvas.width / canvas.height;
+
+    let sx, sy, sw, sh;
+    if (vAspect > cAspect) {
+      sw = vHeight * cAspect;
+      sh = vHeight;
+      sx = (vWidth - sw) / 2;
+      sy = 0;
+    } else {
+      sw = vWidth;
+      sh = vWidth / cAspect;
+      sx = 0;
+      sy = (vHeight - sh) / 2;
+    }
+
+    ctx.drawImage(video, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
   }
 
   // 返回按鈕碰撞偵測
@@ -195,21 +219,30 @@ onUnmounted(() => {
 <style scoped>
 .photo-booth {
   margin: 0;
-  background: #050505;
+  background: #000;
   color: white;
-  height: 100vh;
-  display: grid;
-  grid-template-columns: 280px 1fr;
+  font-family: sans-serif;
   overflow: hidden;
+  position: relative; /* 改為相對定位 */
+  width: 100vw;
+  height: 100vh;
 }
 
 .sidebar {
-  background: rgba(20, 20, 20, 0.9);
-  padding: 25px;
-  border-right: 1px solid #333;
+  position: absolute; /* 改為絕對定位，浮在畫面上方 */
+  left: 20px;
+  top: 20px;
+  bottom: 20px;
+  width: 280px;
+  background: rgba(0, 0, 0, 0.6); /* 增加透明度，可以看到後面的畫面 */
+  backdrop-filter: blur(10px); /* 磨砂玻璃效果 */
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  z-index: 10; /* 確保在畫面上層 */
 }
 
 .back-btn {
@@ -258,19 +291,23 @@ onUnmounted(() => {
 }
 
 .main-display {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #000;
+  z-index: 1; /* 在底層 */
 }
 
 canvas {
-  width: 90%;
-  max-width: 900px;
-  border-radius: 20px;
-  transform: scaleX(-1);
-  box-shadow: 0 0 50px rgba(0,0,0,0.8);
+  /* 關鍵：使用 object-fit 概念讓 Canvas 撐滿 */
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover; /* 確保影像填滿不留黑邊 */
+  transform: scaleX(-1); /* 保持鏡像 */
 }
 
 #countdown {
