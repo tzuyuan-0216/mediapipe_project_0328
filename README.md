@@ -1,6 +1,6 @@
 # 🎮 MediaPipe 互動式風格 UI 首頁 & AI 照相館
 
-這是一個基於 **Vue 3** 與 **Vite** 開發的實驗性前端專案。本專案利用 **MediaPipe Hands** 實現了完全去滑鼠化的「無接觸手勢操作」體驗，模擬 PS5 系統介面，並整合了智慧感應拍照功能。
+這是一個基於 **Vue 3** 與 **Vite** 開發的實驗性前端專案。本專案利用 **MediaPipe Hands** 實現了完全去滑鼠化的「無接觸手勢操作」體驗，並整合了智慧感應拍照功能。
 
 ---
 
@@ -17,32 +17,19 @@
 
 ## 🚀 快速啟動
 
-### 1. 安裝環境與依賴
-確保你的電腦已安裝 **Node.js**，接著在專案根目錄執行：
+### 1. 環境準備
+確保你的電腦已安裝 [Node.js](https://nodejs.org/)。
 
-```bash
+### 2. 專案設定與安裝
+```sh
+# 安裝依賴
 npm install
 
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
+# 本地開發 (Hot-Reload)
 npm run dev
-```
 
-### Compile and Minify for Production
-
-```sh
+# 專案打包 (Production)
 npm run build
-```
 
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
+# 程式碼檢查 (Lint)
 npm run lint
-```
