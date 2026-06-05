@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import PhotoView from '../views/PhotoView.vue'
+import JingSiView from '../views/JingSiView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -22,6 +23,11 @@ const router = createRouter({
       path: '/photo',
       name: 'photo',
       component: PhotoView,
+    },
+    {
+      path: '/jingsi',
+      name: 'jingsi',
+      component: JingSiView,
     },
   ],
 })
