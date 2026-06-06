@@ -39,3 +39,5 @@ __screenshots__/
 *.timestamp-*-*.mjs
 靜思語封面.jpg
 *.mp4
+*.mp3
+test.html

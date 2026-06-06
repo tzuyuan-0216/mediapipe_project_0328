@@ -1,5 +1,6 @@
 <template>
   <div class="ps5-container">
+    <div class="dynamic-bg" :style="backgroundStyle"></div>
     <header>首 頁</header>
 
     <div class="scroller-container" ref="scroller">
@@ -42,7 +43,8 @@ const games = [
   //{ id: 'gow', title: 'God of War Ragnarök', image: 'https://image.api.playstation.com/vulcan/ap/rnd/202207/1210/675F7T8v02Q0M9VjYInBInM3.png', url: '/gow' },
   //{ id: 'spidey', title: 'Spider-Man 2', image: 'https://image.api.playstation.com/vulcan/ap/rnd/202306/1219/62254d3b644e5914101a1c905398a1f2.png', url: '/spidey' },
   //{ id: 'tlou', title: 'The Last of Us Part I', image: 'https://image.api.playstation.com/vulcan/ap/rnd/202206/0720/XFFBOfB0yOrF1bUjFv3A021p.png', url: '/tlou' },
-  { id: 'photo', title: 'AI 照相館', image: 'https://images.unsplash.com/photo-1520390138845-fd2d229dd553?q=80&w=600', url: '/photo' },
+  { id: 'photo', title: 'AI 照相館', image: 'https://images.unsplash.com/photo-1520390138845-fd2d229dd553?q=80&w=600', url: '/photo' , bg: 'https://images.unsplash.com/photo-1513031300226-c8fb12de9ade?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
+  { id: 'jingsi', title: '互動式靜思語', image: 'https://lh3.googleusercontent.com/proxy/ADdj5w47bruWFpOruY6Z7_drnCoLY6regG3dXHJE3CrzbfyxxYu_W52KxUfUEoSY3wjG5T6p1mU9tU4xXuOJ9LBVRY9vNb1LJNurn7arCw', url: '/jingsi' , bg: 'https://images.unsplash.com/photo-1591951425600-d09958978584?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
 ];
 
 // --- 狀態定義 ---
@@ -66,6 +68,24 @@ const cursorPositionStyle = computed(() => ({
   left: `${currentPos.value.x}px`,
   top: `${currentPos.value.y}px`
 }));
+
+const backgroundStyle = computed(() => {
+  const currentGame = games.find(g => g.id === lastHoveredId.value);
+  
+  if (currentGame && currentGame.bg) {
+    return {
+      backgroundImage: `linear-gradient(to bottom, rgba(5, 5, 5, 0.4), rgba(5, 5, 5, 0.95)), url(${currentGame.bg})`,
+      opacity: 1
+    };
+  }
+  
+  // 沒滑到按鈕時，回歸預設暗色
+  return {
+    backgroundImage: 'none',
+    backgroundColor: 'var(--bg-color)',
+    opacity: 0
+  };
+});
 
 // --- MediaPipe 處理 ---
 const onResults = (results) => {
@@ -205,6 +225,12 @@ header {
   scrollbar-width: none;
 }
 
+header, 
+.scroller-container {
+  position: relative;
+  z-index: 1;
+}
+
 .scroller-container::-webkit-scrollbar { display: none; }
 
 .game-items-list {
@@ -276,5 +302,16 @@ header {
   transform: scaleX(-1);
   opacity: 0.5;
   z-index: 100;
+}
+.dynamic-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  transition: opacity 0.5s ease;
+  z-index: 0;
 }
 </style>

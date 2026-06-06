@@ -1,5 +1,37 @@
 <template>
   <div id="container">
+    
+    <Transition name="fade">
+      <div v-if="showGuide" id="guide-overlay">
+        <div class="guide-box">
+          <h2>互動式靜思語</h2>
+          
+          <div class="guide-steps">
+            <div class="step-item">
+              <div class="step-icon">🧘‍♂️</div>
+              <h3>1. 靜心合掌彎腰</h3>
+              <p>在鏡頭前挺直身體，然後做一個<strong>「向前彎腰」</strong>的動作，即可隨機觸發靜思語動畫。</p> <!--與銅鑼聲-->
+            </div>
+            
+            <div class="step-item">
+              <div class="step-icon">🖐️</div>
+              <h3>2. 舉起右手控制</h3>
+              <p>舉起右手，畫面上會出現<strong>圓點游標</strong>。將游標對準左上角按鈕，做出<strong>「捏合或握拳」</strong>手勢即可返回。</p>
+            </div>
+          </div>
+            嘗試將圓點移到「開始體驗」按鈕上！<br><br>
+          <button 
+            id="btn-start" 
+            class="start-btn" 
+            :class="{ active: isHoveringStart }" 
+            @click="closeGuide"
+            >
+            開始體驗
+          </button>
+        </div>
+      </div>
+    </Transition>
+
     <button 
       id="btn-back" 
       class="back-btn" 
@@ -36,6 +68,7 @@
     >
       <div class="cursor-core"></div>
     </div>
+    
   </div>
 </template>
 
@@ -53,7 +86,8 @@ const router = useRouter();
 const canvasRef = ref(null);
 const mainVideoRef = ref(null);
 const bellSoundRef = ref(null);
-
+const showGuide = ref(true);         // 預設開啟說明視窗
+const isHoveringStart = ref(false);  // 是否懸停在開始體驗按鈕上
 // 狀態管理
 const isPlaying = ref(false);
 let poseInstance = null;
@@ -86,10 +120,21 @@ const loop = () => {
   cY.value += (tY - cY.value) * 0.15;
 
   const el = document.elementFromPoint(cX.value, cY.value);
+  
+  // 1. 檢查回上頁按鈕
   const hoverBack = el?.closest('#btn-back');
   isHoveringBack.value = !!hoverBack;
 
-  if (hoverBack && isPinching.value && !wasPinching) {
+  // 2. 新增：檢查開始體驗按鈕
+  const hoverStart = el?.closest('#btn-start');
+  isHoveringStart.value = !!hoverStart; // 👈 補上這一行！
+  // 當懸停在「開始體驗」按鈕上，且做出捏合動作時
+  if (showGuide.value && hoverStart && isPinching.value && !wasPinching) {
+    closeGuide();
+  }
+
+  // 當懸停在「回上頁」按鈕上，且做出捏合動作時
+  if (!showGuide.value && hoverBack && isPinching.value && !wasPinching) {
     goBack();
     return;
   }
@@ -186,7 +231,11 @@ function initMediaPipe() {
   cameraInstance.start();
   console.log("🚀 MediaPipe 單模型優化系統初始化成功！");
 }
-
+// 關閉說明視窗，此時才真正初始化相機 (避免一進頁面就被彈窗擋住卻在背景狂偵測)
+function closeGuide() {
+  showGuide.value = false;
+  // initMediaPipe(); // 搬到這裡執行！
+}
 onMounted(() => {
   initMediaPipe();
   loop();
@@ -319,5 +368,113 @@ canvas { width: 100%; height: 100%; transform: scaleX(-1); }
   transform: scale(1.3);
   background-color: #00ffcc;
   box-shadow: 0 0 12px #00ffcc;
+}
+/* ==========================================================================
+   彈出說明視窗 CSS
+   ========================================================================== */
+#guide-overlay {
+  position: absolute;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background-color: rgba(0, 0, 0, 0.75); 
+  z-index: 100; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px); 
+}
+
+.guide-box {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 40px;
+  border-radius: 20px;
+  width: 80%;
+  max-width: 650px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.guide-box h2 {
+  color: #1a1a1a;
+  margin-bottom: 30px;
+  font-size: 28px;
+}
+
+.guide-steps {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 40px;
+  text-align: left;
+}
+
+.step-item {
+  flex: 1;
+  background: #f5f7fa;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e1e4e8;
+}
+
+.step-icon {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.step-item h3 {
+  margin: 0 0 10px 0;
+  color: #0072ce;
+  font-size: 18px;
+}
+
+.step-item p {
+  margin: 0;
+  color: #555;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.start-btn {
+  /* 顯著放大字體與按鈕面積 */
+  padding: 18px 60px;          /* 增加上下與左右的填充範圍 */
+  font-size: 24px;             /* 字體從 18px 放大到 24px */
+  font-weight: 800;            /* 讓字體更粗、更醒目 */
+  letter-spacing: 2px;         /* 稍微拉開字距，提升大字體的質感 */
+  
+  background-color: #0072ce;
+  color: white;
+  border: none;
+  border-radius: 40px;         /* 隨著按鈕放大，圓角也微調成更流線的 40px */
+  cursor: pointer;
+  
+  /* 增強陰影，讓按鈕更有立體浮空感 */
+  box-shadow: 0 8px 25px rgba(0, 114, 206, 0.45);
+  
+  /* 讓動畫過渡在滑動時更流暢 */
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 當手勢游標或滑鼠碰觸到時的視覺反饋 */
+.start-btn:hover,
+.start-btn.active {
+  background-color: #00569d;
+  transform: scale(1.08);      /* 隔空手勢游標對準時，一樣能順利放大 1.08 倍！ */
+  box-shadow: 0 12px 30px rgba(0, 114, 206, 0.6);
+}
+
+/* ==========================================================================
+   Vue Transition "fade" 過場動畫效果樣式
+   ========================================================================== */
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-enter-to,
+.fade-leave-from {
+  opacity: 1;
 }
 </style>
